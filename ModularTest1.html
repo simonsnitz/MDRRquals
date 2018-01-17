@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+    
+    
+<!--
+        To Customize (1) # of main topics (2) # of subheading topics per main topic, must make this javascript changes:
+        
+        -(Y) click to scroll to: main topic bar
+        -(Y) click to scroll to: subheading bars
+        
+        -(Y) fix then scroll for main topic bar
+        -(Y) fix then scroll for subheading bars
+        
+        -(Y) scroll to change opacity for main topic bar
+        -(Y) scroll to change opacity for subheading bars
+        
+        Parameters to change for modifying # of topics/subsections
+        
+        #Topics:
+          - numTopics value
+          - number of elements in 'loop' array
+          - number of sec# divs under scrollBar div
+          - the actual number of main sections (topicHeader#, topicDescription#, relativeBox#)
+        
+        #subHeadings for given topic:
+          - numSubtopics# value
+          - number of sub## divs under subHeadingScroll# div
+          - number of subDes## divs at bottom of relativeBox# div
+          
+        ... much easier now, but can I further simplify this changing process?
+        
+    -->
+    
+    
+    <script type="text/javascript">
+      window.onload = function() {
+        
+        
+        //experimental
+        
+        var numTopics = 6;
+        var numSubtopics1 = 4;
+        var numSubtopics2 = 3;
+        var numSubtopics3 = 2;
+        var numSubtopics4 = 5;
+        var numSubtopics5 = 4;
+        
+        var loop = [numSubtopics1,numSubtopics2,numSubtopics3,numSubtopics4,numSubtopics5];
+
+  //creates variable to get Elements based on number in 'numTopics'    var named sec#
+       var secList = [];               // [sec1,sec2,sec3,sec4 ...]
+       for (i=1;i<=numTopics;i++){
+          window["sec"+i] = document.getElementById('sec'+i);     //create get elements (sec#)
+          secList[i-1] = window["sec"+i];
+        }
+  
+  
+////click subheading text on 2nd bar to scroll to it's section (fully modular)////
+
+    var scr = window.scrollY;  //accounts for current scroll position to calc top or subSection headings
+    var bT = (document.getElementById('scrollBar').scrollHeight*2);  //height of both top bar and subheading bar
+        
+  //fill array subList with strings to get Element names in for loop
+    var subList = [];
+    var getSubList = [];
+    for (i=1;i<numTopics;i++){              //for # of topics listed in numTopics, loop:
+          var numSubtopic = loop[i-1];
+          getSubList[i-1] = new Array;
+          for(k=1;k<=numSubtopic;k++){
+            subList = subList.concat("sub"+k+i);
+            window["sub"+k +i] = document.getElementById("sub"+k +i);
+            getSubList[i-1].push(window["sub"+k +i]);
+          }
+        }
+   
+    //defines var for locating top of each subsection        var named topSec##  and filling array with those variables
+        var topSecList = [];
+        for (i=1;i<numTopics;i++){              //for # of topics listed in numTopics, loop:
+          var numSubtopic = loop[i-1];
+          for(k=1;k<=numSubtopic;k++){
+            window["topSec"+k +i] = document.getElementById("subDes"+k +i).getBoundingClientRect().top + scr -bT;
+            topSecList = topSecList.concat(window['topSec'+k+i]);
+          }
+        }
+        
+        for(i=0;i<subList.length;i++){
+          (function(i){                     //scoping function AHHHHH!!
+            var elem = document.getElementById(subList[i]);
+            elem.addEventListener("click",function(){window.scrollTo(0,(topSecList[i])); },false );
+          })(i)
+        }
+
+
+
+          
+////click to scroll to different main topics (fully modular)////
+
+        var topBar = document.getElementById('scrollBar').offsetTop;  //defines starting scroll position of top menu
+        var description = document.getElementById('description');
+        
+    //declares 'relativeBox' variables for 'click to scroll to'.
+    var relativeOffset = [];
+    var relativeScroll = [];
+        for (i=1;i<=loop.length;i++){
+          window['relativeBox'+i+'Offset'] = document.getElementById('relativeBox'+i).offsetTop;   // var relativeBox1Offset
+          relativeOffset = relativeOffset.concat(window['relativeBox'+i+'Offset']);
+          window['relativeBox'+i+'Scroll'] = document.getElementById('relativeBox'+i).scrollHeight;   //var relativeBox1Scroll
+          relativeScroll = relativeScroll.concat(window['relativeBox'+i+'Scroll']);
+        }
+  
+          sec1.onclick = function(){    //standard
+            window.scrollTo(0,topBar);
+          }
+          sec2.onclick = function(){    //must have at least 1 main topic
+            window.scrollTo(0,description.offsetTop + description.scrollHeight);
+          }
+          
+          for (i=2;i<secList.length;i++){
+            (function(i){
+            var elem = secList[i];
+            elem.addEventListener('click', function(){
+              //alert(i);
+              window.scrollTo(0,(relativeOffset[i-2] + relativeScroll[i-2]));
+              },false);
+            })(i)
+          }
+
+          
+          
+////Fully modular change opacity function. bolds first parameter and makes all others more opaque////
+        function changeOpacity(){
+          remArray = [];
+          add1 =arguments[0];
+          for(i=1;i<arguments.length;i++){
+            window['rem'+i] = arguments[i]; //if avoid global variables, will have to manually create array = []; and add rem1,rem2,rem3 ... via for loop
+            remArray = remArray.concat(arguments[i]);
+          }
+            add1.classList.add('highOpacity'); //add bold to 'overview'
+            add1.classList.remove('lowOpacity');
+            for(i=0;i<remArray.length;i++){   //remove bold from all others
+              remArray[i].classList.remove('highOpacity');
+              remArray[i].classList.add('lowOpacity');
+            }
+          }
+          
+          
+        window.onscroll = function() {    //should move all variables outside onscroll function
+          
+      //scroll to fix for top bar          standard
+          var pageTop = document.documentElement.scrollTop;  //defines the scroll position at top of window
+          var scrollBar = document.getElementById('scrollBar');
+          if (pageTop > topBar){
+            scrollBar.classList.add('addFix');
+            scrollBar.classList.remove('goBack');
+          }
+          else {
+            scrollBar.classList.remove('addFix');
+            scrollBar.classList.add('goBack');
+          }
+          
+      //standard variables
+          var pageTopPlus = document.documentElement.scrollTop + scrollBar.scrollHeight;
+          var pageTopPlusPlus = document.documentElement.scrollTop + (scrollBar.scrollHeight*2.6); //2.6, idk, just worked that way. may fail later :/
+          
+  
+         //creates variable to get Elements based on number in 'numTopics'    var named subheadingScroll#
+          var subheadingScroll = [];
+       for (i=1;i<=numTopics;i++){
+          window["subheadingScroll"+i] = document.getElementById('subheadingScroll'+i);     //create get elements (subheadingScroll#)
+          subheadingScroll = subheadingScroll.concat(window['subheadingScroll'+i]);
+        }
+          
+
+///// changes scroll/fix positioning of subheading bars at certain scroll heights (Fully Modular) ////
+
+
+          for(i=0;i<numTopics-1;i++){
+            
+            topBar2 = relativeOffset[i];                        //topFirstBar
+            topBarPlus = topBar2 + relativeScroll[i];       //topBarPlus
+            thisBar = subheadingScroll[i];                     //firstBar
+            
+          if (pageTopPlus < topBar2){                                //if top of page above subheading bar.
+            thisBar.classList.add('goBack1');
+            thisBar.classList.remove('goBack12');
+            thisBar.classList.remove('addSubFix');
+          }
+          else if (pageTopPlus > topBar2 && pageTopPlusPlus < topBarPlus){    //if top of page within subsection area.
+            thisBar.classList.add('addSubFix');
+            thisBar.classList.remove('goBack1');
+            thisBar.classList.remove('goBack12');
+          }
+          else if (pageTopPlusPlus > topBarPlus){                   //if top of page below subheading bar.
+            thisBar.classList.add('goBack12');
+            thisBar.classList.remove('goBack1');
+            thisBar.classList.remove('addSubFix');
+          }
+            
+          }
+          
+          
+      //change opacity of top bar headings based on scroll position
+          var topic1Dist = (description.offsetTop + description.scrollHeight -1);    //standard (must have at least 1 subheading)
+          
+          var topicDistList = [topic1Dist];
+          
+      //creates variable # of 'topic#Dist' vars.
+          for(i=0;i<relativeOffset.length-1;i++){
+            window['topic'+(i+2)+'Dist'] = (relativeOffset[i] + relativeScroll[i] -1);
+            topicDistList[i+1] = (window['topic'+(i+2)+'Dist']);
+          }
+        
+          
+        var topicDistList2 = []; // new Array containing conditional statements and page heights
+  //fills first and last positions (standard)
+          topicDistList2[0] = pageTop < topic1Dist;   //topic1Dist set to beginning of array
+          topicDistList2[numTopics-1] = pageTop > topicDistList[topicDistList.length-1];    //last element in topicDistList array set to last element in array
+  //fills middle positions
+          for (i=1;i<numTopics-1;i++){
+            topicDistList2[i] = pageTop > topicDistList[i-1] && pageTop < topicDistList[i];  //fill rest of elements in topicDistList2 array
+          }
+          
+  //create array with different arrangements of sec#.
+        var secListArr = [];
+        for(i=0;i<secList.length;i++){
+          secListArr[i] = secList.slice(0);
+          roo2 = secListArr[i].splice(i,1)[0];
+          secListArr[i].splice(0,0,roo2);
+        }
+          
+  //loop to change opacity of top bar
+          for (i=0;i<topicDistList2.length;i++){
+            if (topicDistList2[i]){
+              changeOpacity.apply(this,secListArr[i]);
+            }
+          }
+
+
+/* change opacity of subBar on scroll position */
+
+  //create array with different arrangements of sec#.
+
+        var subListArr = [];
+        for(i=0;i<getSubList.length;i++){
+          subListArr[i] = [];
+          for (k=0;k<getSubList[i].length;k++){
+            subListArr[i][k] = getSubList[i].slice(0);
+            roo2 = subListArr[i][k].splice(k,1)[0];
+            subListArr[i][k].splice(0,0,roo2);
+            }
+        }
+
+//alert(getSubList[0]); -> [sub11,sub21,sub31,sub41]; 4 arrangements of this
+//alert(getSubList[1]); -> [sub12,sub22,sub32,sub42]; 4 arrangements of this
+//alert(getSubList[2]); -> [sub13,sub23,sub33,sub43]; 4 arrangements of this
+
+        var x = 1;
+        var topicSecParse = [];
+        for(i=0;i<numTopics-1;i++){   //number of non-overview topics   0,1,2
+          subTop = loop[i]-1;
+          topicSecParse[i] = [];
+          topicSecParse[i][0] = pageTop < topSecList[x]-1;            //defines first element of every 'topic array'
+          topicSecParse[i][subTop] = pageTop > topSecList[x+loop[i]-2]-1;   //defines last element of every 'topic array'  wont work if have 1 subheading
+          x+= loop[i];
+        }
+
+        var z = 1;
+        for(i=0;i<numTopics-1;i++){
+          for(k=1;k<loop[i]-1;k++){
+            topicSecParse[i][k] = pageTop > topSecList[z]-1 && pageTop < topSecList[z+1]-1;
+            z += 1;
+          }
+          z -= (loop[i]-2);
+          z += loop[i];
+        }
+        
+ 
+          
+          for (j=0;j<numTopics-1;j++){
+            for (n=0;n<loop[j];n++){
+              if (topicSecParse[j][n]){
+                changeOpacity.apply(this,subListArr[j][n]);
+              }
+            }
+          }
+ 
+        }   //end of window scroll function
+        
+
+    }       //end of script
+      
+    </script>
+    
+    <style>
+    *{box-sizing:border-box;
+    }
+
+
+    .addFix{       /*add fix position for main bar*/
+      position:fixed;
+      top:0;
+    }
+    .addSubFix{     /*add fix position for subheading bars*/
+      position:fixed;
+      top:7vh;
+    }
+    .goBack{      /*top position for main bar*/
+      position:absolute;
+      top:20vh;
+    }
+
+    .goBack1{    /*top position for subheading bars*/
+      position:absolute;
+      top:0;
+    }
+    .goBack12{   /*bottom position for subheading bars*/
+      position:absolute;
+      bottom:0;
+    }
+    
+    
+    #subject{
+      width:98vw;
+      height:15vh;
+      text-align:center;
+      //border:1px solid black;
+      //font-family:garamond;
+    }
+    #subject h1{
+      padding-top: 2.5%;
+    }
+
+    .scrollFixBar{
+      z-index:10;
+      background-color:white;
+      width:98vw;
+      float:left;
+      margin-left:0;
+      height:7vh;
+      border-top:1px solid black;
+      border-bottom:1px solid black;
+      margin-bottom:5%;
+      text-align:center;
+    }
+    .topics{                                     /*defines font size and top bar div width*/
+      position:relative;
+      height:100%;
+      margin-left:4%;
+      display:inline-block;
+      width:10%;
+      font-size: 1.2vw;
+      //border:1px solid black;
+    }
+    #description{
+      margin-top:15vh;
+      width:98vw;
+      float:left;
+      position:relative;
+    }
+    .topicOverview{
+      float:left;
+      width:90%;
+      margin-left:3%;
+      margin-bottom:10%;
+      //border:1px solid black;
+      line-height:80%;
+      position:relative;
+    }
+    .topicOverview p {
+      font-size:1.5em;
+    }
+      .relativeBoxes{
+      position:relative;
+      float:left;
+      width:100%;
+      height:100%;
+    }
+    .topicHeader{
+      width:95%;
+      float:left;
+      text-align:center;
+      border-bottom:1px solid black;
+      margin:5% 0 5% 3%;
+      position:relative;
+    }
+    .topicDescription{
+      position:relative;
+      border:1px solid black;
+      text-align:center;
+      width:60vw;
+      float:left;
+      margin-left:19vw;
+      padding:1em;
+      margin-bottom:5%;
+    }
+    .topicDescription p{
+      font-size:1.5em;
+    }
+    .lowOpacity{
+      opacity:0.4;
+    }
+    .highOpacity{
+      opacity:1;
+    }
+    
+    #subDes21{
+      border:1px solid black;
+    }
+    
+    </style>
+  </head>
+
+  <body>
+    
+    <div id='blip'>
+    </div>
+    
+    <div id='subject'>
+      <h1>Repurposing MDRRs for Metabolic Engineering</h1>
+    </div>
+    
+    <div id='scrollBar' class='scrollFixBar goBack' style='z-index:100'>
+      <div id='sec1' class='topics highOpacity'>
+        <h2 >Overview</h2>
+      </div>
+      <div id='sec2' class='topics lowOpacity'>
+        <h2 >Biosensors</h2>
+      </div>
+      <div id='sec3' class='topics lowOpacity'>
+        <h2>TetRs</h2>
+      </div>
+      <div id='sec4' class='topics lowOpacity'>
+        <h2>MDRRs</h2>
+      </div>
+      <div id='sec5' class='topics lowOpacity'>
+        <h2>Products</h2>
+      </div>
+      <div id='sec6' class='topics lowOpacity'>
+        <h2>Benzylisoquinolines</h2>
+      </div>
+    </div>
+    
+  <div id='description'>
+    <div class='topicOverview'>
+      <h2>Biosensors</h2>
+      <p>This is a description</p>
+    </div>
+    <div class='topicOverview'>
+      <h2>TetRs</h2>
+      <p>This is a description</p>
+    </div>
+    <div class='topicOverview'>
+      <h2>MDRRs</h2>
+      <p>This is a description</p>
+    </div>
+    <div class='topicOverview'>
+      <h2>Products</h2>
+      <p>This is a description</p>
+    </div>
+    <div class='topicOverview'>
+      <h2>Benzylisoquinolines</h2>
+      <p>This is a description</p>
+    </div>
+  </div>
+    
+    <div class='topicHeader'>
+      <h1>Biosensors</h1>
+    </div>
+    <div class='topicDescription'>
+      <p>This is a description <br>of the<br> topic</p>
+    </div>
+    
+  <div id='relativeBox1' class='relativeBoxes'>
+    <div id='subheadingScroll1' class='scrollFixBar goBack1'>
+      <div id='sub11' class='topics' style='width:20%'>
+        <h2>Types</h2>
+      </div>
+      <div id='sub21' class='topics' style='width:20%'>
+        <h2>Transcription Factors</h2>
+      </div>
+      <div id='sub31' class='topics' style='width:20%'>
+        <h2>Biosensor Engineering</h2>
+      </div>
+      <div id='sub41' class='topics' style='width:20%'>
+        <h2>Applications</h2>
+      </div>
+    </div>
+    
+    <div class='topicOverview' style='margin-top:15vh' id='subDes11'>
+      <h2>Biosensor Types</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes21'>
+      <h2>Transcription Factors</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes31'>
+      <h2>Biosensor Engineering</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes41'>
+      <h2>Applications</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+  </div>  <!--relativeBox1-->
+    
+    <div class='topicHeader'>
+      <h1>TetRs</h1>
+    </div>
+    <div class='topicDescription'>
+      <p>This is a description <br>of the<br> topic</p>
+    </div>
+    
+  <div id='relativeBox2' class='relativeBoxes'>
+    <div id='subheadingScroll2' class='scrollFixBar goBack1'>
+      <div id='sub12' class='topics'>
+        <h2>Function</h2>
+      </div>
+      <div id='sub22' class='topics'>
+        <h2>Structure</h2>
+      </div>
+      <div id='sub32' class='topics'>
+        <h2>Allostery</h2>
+      </div>
+    </div>
+    
+    <div class='topicOverview' style='margin-top:15vh' id='subDes12'>
+      <h2>Function</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes22'>
+      <h2>Structure</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes32'>
+      <h2>Allostery</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+  </div> <!--relative box-->
+    
+        <div class='topicHeader'>
+      <h1>MDRRs</h1>
+    </div>
+    <div class='topicDescription'>
+      <p>This is a description <br>of the<br> topic</p>
+    </div>
+    
+  <div id='relativeBox3' class='relativeBoxes'>
+    <div id='subheadingScroll3' class='scrollFixBar goBack1'>
+      <div id='sub13' class='topics'>
+        <h2>Function</h2>
+      </div>
+      <div id='sub23' class='topics'>
+        <h2>Features</h2>
+      </div>
+
+    </div>
+    
+    <div class='topicOverview' style='margin-top:15vh' id='subDes13'>
+      <h2>Function</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes23'>
+      <h2>Features</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+  </div> <!--relative box-->
+    
+     <div class='topicHeader'>
+      <h1>Plant Products</h1>
+    </div>
+    <div class='topicDescription'>
+      <p>This is a description <br>of the<br> topic</p>
+    </div>
+    
+  <div id='relativeBox4' class='relativeBoxes'>
+    <div id='subheadingScroll4' class='scrollFixBar goBack1'>
+      <div id='sub14' class='topics'>
+        <h2>Terpenoids</h2>
+      </div>
+      <div id='sub24' class='topics'>
+        <h2>Alkaloids</h2>
+      </div>
+      <div id='sub34' class='topics'>
+        <h2>Farming</h2>
+      </div>
+      <div id='sub44' class='topics'>
+        <h2>Synthesis</h2>
+      </div>
+      <div id='sub54' class='topics'>
+        <h2>Fermentation</h2>
+      </div>
+
+    </div>
+    
+    <div class='topicOverview' style='margin-top:15vh' id='subDes14'>
+      <h2>Terpenoids</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes24'>
+      <h2>Alkaloids</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes34'>
+      <h2>Farming</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    <div class='topicOverview' id='subDes44'>
+      <h2>Synthesis</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    <div class='topicOverview' id='subDes54'>
+      <h2>Fermentation</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+  </div> <!--relative box-->
+    
+     <div class='topicHeader'>
+      <h1>Benzylisoquinolines</h1>
+    </div>
+    <div class='topicDescription'>
+      <p>This is a description <br>of the<br> topic</p>
+    </div>
+    
+  <div id='relativeBox5' class='relativeBoxes'>
+    <div id='subheadingScroll5' class='scrollFixBar goBack1'>
+      <div id='sub15' class='topics' style='width:20%'>
+        <h2>Pathway</h2>
+      </div>
+      <div id='sub25' class='topics' style='width:20%'>
+        <h2>Norcoclaurine Synthase</h2>
+      </div>
+      <div id='sub35' class='topics' style='width:20%'>
+        <h2>NCS Reaction</h2>
+      </div>
+      <div id='sub45' class='topics' style='width:20%'>
+        <h2>NCS Application</h2>
+      </div>
+
+    </div>
+    
+    <div class='topicOverview' style='margin-top:15vh' id='subDes15'>
+      <h2>Pathway</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes25'>
+      <h2>Norcoclaurine Synthase</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes35'>
+      <h2>NCS reaction</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+    <div class='topicOverview' id='subDes45'>
+      <h2>NCS Application</h2>
+      <p>This is a description
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+           <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+           <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+           <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+            <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+           <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+           <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+           <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      <br>.
+      </p>
+    </div>
+    
+  </div> <!--relative box-->
+    
+      
+  </body>
+
+</html>
